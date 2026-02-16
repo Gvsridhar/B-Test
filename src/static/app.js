@@ -148,8 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
       messageDiv.classList.remove("hidden");
 
       // Refresh activities list to show updated participant count
-      //       if (response.ok) {
-              await fetchActivities();
+      if (response.ok) {
+        await fetchActivities();
       }
 
       // Hide message after 5 seconds
