@@ -27,7 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="participants-section">
               <strong>Currently Signed Up (${details.participants.length}):</strong>
               <ul class="participants-list">
-                ${details.participants.map(email => `<li>${email}</li>`).join('')}
+                ${details.participants.map(email => `
+                  <li>
+                    <span class="participant-email">${email}</span>
+                    <button class="delete-btn" data-activity="${name}" data-email="${email}" title="Remove participant">
+                      ✕
+                    </button>
+                  </li>
+                `).join('')}
               </ul>
             </div>
           `;
@@ -56,9 +63,59 @@ document.addEventListener("DOMContentLoaded", () => {
         option.textContent = name;
         activitySelect.appendChild(option);
       });
+
+      // Add event listeners for delete buttons
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', handleDeleteParticipant);
+      });
     } catch (error) {
       activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
       console.error("Error fetching activities:", error);
+    }
+  }
+
+  // Handle delete participant
+  async function handleDeleteParticipant(event) {
+    event.preventDefault();
+    const activityName = event.target.getAttribute('data-activity');
+    const email = event.target.getAttribute('data-email');
+
+    if (!confirm(`Remove ${email} from ${activityName}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/activities/${encodeURIComponent(activityName)}/participants/${encodeURIComponent(email)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Refresh the activities list
+        await fetchActivities();
+        
+        messageDiv.textContent = result.message;
+        messageDiv.className = "success";
+      } else {
+        messageDiv.textContent = result.detail || "Failed to remove participant";
+        messageDiv.className = "error";
+      }
+
+      messageDiv.classList.remove("hidden");
+
+      // Hide message after 3 seconds
+      setTimeout(() => {
+        messageDiv.classList.add("hidden");
+      }, 3000);
+    } catch (error) {
+      messageDiv.textContent = "Failed to remove participant. Please try again.";
+      messageDiv.className = "error";
+      messageDiv.classList.remove("hidden");
+      console.error("Error removing participant:", error);
     }
   }
 
@@ -89,6 +146,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       messageDiv.classList.remove("hidden");
+
+      // Refresh activities list to show updated participant count
+      //       if (response.ok) {
+              await fetchActivities();
+      }
 
       // Hide message after 5 seconds
       setTimeout(() => {
