@@ -20,40 +20,72 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
-        // Create participants list HTML
-        let participantsHTML = '';
+        // Build activity card content safely using DOM APIs
+        const titleEl = document.createElement("h4");
+        titleEl.textContent = name;
+
+        const descriptionEl = document.createElement("p");
+        descriptionEl.textContent = details.description;
+
+        const scheduleEl = document.createElement("p");
+        const scheduleStrong = document.createElement("strong");
+        scheduleStrong.textContent = "Schedule:";
+        scheduleEl.appendChild(scheduleStrong);
+        scheduleEl.appendChild(document.createTextNode(" " + details.schedule));
+
+        const availabilityEl = document.createElement("p");
+        const availabilityStrong = document.createElement("strong");
+        availabilityStrong.textContent = "Availability:";
+        availabilityEl.appendChild(availabilityStrong);
+        availabilityEl.appendChild(document.createTextNode(" " + spotsLeft + " spots left"));
+
+        const participantsSection = document.createElement("div");
+        participantsSection.className = "participants-section";
+
+        const participantsLabel = document.createElement("strong");
         if (details.participants.length > 0) {
-          participantsHTML = `
-            <div class="participants-section">
-              <strong>Currently Signed Up (${details.participants.length}):</strong>
-              <ul class="participants-list">
-                ${details.participants.map(email => `
-                  <li>
-                    <span class="participant-email">${email}</span>
-                    <button class="delete-btn" data-activity="${name}" data-email="${email}" title="Remove participant">
-                      ✕
-                    </button>
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
-          `;
+          participantsLabel.textContent = `Currently Signed Up (${details.participants.length}):`;
+          participantsSection.appendChild(participantsLabel);
+
+          const participantsList = document.createElement("ul");
+          participantsList.className = "participants-list";
+
+          details.participants.forEach(email => {
+            const li = document.createElement("li");
+
+            const emailSpan = document.createElement("span");
+            emailSpan.className = "participant-email";
+            emailSpan.textContent = email;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.title = "Remove participant";
+            deleteBtn.textContent = "✕";
+            deleteBtn.dataset.activity = name;
+            deleteBtn.dataset.email = email;
+
+            li.appendChild(emailSpan);
+            li.appendChild(deleteBtn);
+            participantsList.appendChild(li);
+          });
+
+          participantsSection.appendChild(participantsList);
         } else {
-          participantsHTML = `
-            <div class="participants-section">
-              <strong>Currently Signed Up:</strong>
-              <p class="no-participants">No students yet - be the first!</p>
-            </div>
-          `;
+          participantsLabel.textContent = "Currently Signed Up:";
+          participantsSection.appendChild(participantsLabel);
+
+          const noParticipantsMsg = document.createElement("p");
+          noParticipantsMsg.className = "no-participants";
+          noParticipantsMsg.textContent = "No students yet - be the first!";
+          participantsSection.appendChild(noParticipantsMsg);
         }
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-          ${participantsHTML}
-        `;
+        // Append all parts to the activity card
+        activityCard.appendChild(titleEl);
+        activityCard.appendChild(descriptionEl);
+        activityCard.appendChild(scheduleEl);
+        activityCard.appendChild(availabilityEl);
+        activityCard.appendChild(participantsSection);
 
         activitiesList.appendChild(activityCard);
 
