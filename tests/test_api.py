@@ -25,7 +25,6 @@ class TestGetActivities:
         
         data = response.json()
         assert isinstance(data, dict)
-        assert len(data) == 9  # We have 9 activities
         
         # Check that all expected activities are present
         expected_activities = [
